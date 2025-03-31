@@ -41,7 +41,6 @@ public class BookService {
         bookToUpdate.setTitle(book.getTitle());
         bookToUpdate.setReleaseYear(book.getReleaseYear());
         bookToUpdate.setQuantityAvailable(book.getQuantityAvailable());
-        bookToUpdate.setId(book.getId());
         bookToUpdate.setAuthor(book.getAuthor());
         bookRepository.save(bookToUpdate);
         return bookToUpdate;
@@ -76,6 +75,6 @@ public class BookService {
     public Book returnBookById(Long id) {
         Book foundBook = bookRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nenhum livro encontrado com o id: " + id));
-                return foundBook;
+        return foundBook;
     }
 }
