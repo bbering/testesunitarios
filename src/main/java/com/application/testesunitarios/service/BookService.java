@@ -72,4 +72,10 @@ public class BookService {
         returnedBook.setQuantityAvailable(returnedBook.getQuantityAvailable() + 1);
         return returnedBook;
     }
+
+    public Book returnBookById(Long id) {
+        Book foundBook = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Nenhum livro encontrado com o id: " + id));
+                return foundBook;
+    }
 }
