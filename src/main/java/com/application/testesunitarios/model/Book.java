@@ -35,7 +35,14 @@ public class Book {
     @Column(name = "quantityAvailable")
     private int quantityAvailable;
 
-    public Book() {
+    public Book(String title, String author, int releaseYear, int quantityAvailable) {
+        this.title = title;
+        this.author = author;
+        this.releaseYear = releaseYear;
+        this.quantityAvailable = quantityAvailable;
+    }
 
+    public Book(){
+        
     }
 }
