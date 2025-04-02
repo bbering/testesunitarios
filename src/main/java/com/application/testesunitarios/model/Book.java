@@ -42,7 +42,17 @@ public class Book {
         this.quantityAvailable = quantityAvailable;
     }
 
-    public Book(){
-        
+    // construtor que recebe parametros vazios para realizar teste de caso de falha
+    public Book(String title, String author) {
+        if (title == null || author == null) {
+            throw new IllegalArgumentException("Title and author cant be null");
+        }
+
+        this.title = title;
+        this.author = author;
+    }
+
+    public Book() {
+
     }
 }
