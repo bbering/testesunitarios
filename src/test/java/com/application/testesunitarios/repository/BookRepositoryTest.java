@@ -16,6 +16,9 @@ import com.application.testesunitarios.model.Book;
 @ActiveProfiles("test")
 public class BookRepositoryTest {
 
+    // essa classe contem testes de integracao, utilizando um banco de dados em
+    // memoria h2 para simular um banco em producao
+
     @Autowired
     private BookRepository bookRepository;
 

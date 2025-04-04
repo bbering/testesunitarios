@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -93,5 +95,37 @@ public class BookServiceTest {
 
         // verificar que o repositorio é chamado apenas uma vez para o metodo findall
         verify(bookRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Should update book when data is valid")
+    public void shouldUpdateBookWhenDataIsValid() {
+        // mockando um book para usar no teste
+        Book book = new Book(1L, "Test title", "Test author", 1990, 4);
+
+        // quando o repository tiver o metodo findById chamado, deve retornar um objeto
+        // book
+        when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
+
+        // testando o metodo update da service com as assertions
+        Book bookToUpdate = bookService.updateBook(book, 1L);
+        assertEquals(bookToUpdate.getTitle(), book.getTitle());
+        assertEquals(bookToUpdate.getAuthor(), book.getAuthor());
+        assertEquals(bookToUpdate.getQuantityAvailable(), book.getQuantityAvailable());
+        assertEquals(bookToUpdate.getId(), book.getId());
+        assertEquals(bookToUpdate.getReleaseYear(), book.getReleaseYear());
+
+        // verificando se o metodo findById é chamado uma só vez
+        verify(bookRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    @DisplayName("Should not update the book if he wasnt found on DB")
+    public void shouldNotUpdateTheBookIfHeDoesntExist() {
+        // se nao houver um livro com o id recebido, retorna um objeto optional vazio
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> bookService.updateBook(new Book(), 1L),
+                "Nenhum livro encontrado com o id: " + 1L);
     }
 }
