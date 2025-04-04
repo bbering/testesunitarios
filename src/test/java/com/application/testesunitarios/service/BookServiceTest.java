@@ -1,11 +1,14 @@
 package com.application.testesunitarios.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,8 +62,36 @@ public class BookServiceTest {
     public void shouldNotCreateBookWhenDataIsNotValid() {
         Book invalidBook = new Book(null, "Test author");
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> bookService.createBook(invalidBook));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> bookService.createBook(invalidBook));
 
         assertEquals("Title and author cant be null", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should list all the books")
+    public void shouldListAllTheBooksIfTheresAny() {
+        // mockando uma lista de books para teste
+        List<Book> mockBooks = List.of(
+                new Book(1L, "Test title", "Test author", 1990, 4),
+                new Book(2L, "Test title 2", "Test author 2", 1991, 5),
+                new Book(3L, "Test title 3", "Test author 3", 1992, 6));
+
+        // assegurar que, quando o metodo findall for chamado, ele retorne uma lista de
+        // objetos do tipo book
+        when(bookRepository.findAll()).thenReturn(mockBooks);
+
+        // lista de objetos do tipo book para realizar assertions
+        List<Book> result = bookService.listBooks();
+
+        // assercoes
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals("Test title", result.get(0).getTitle());
+        assertEquals("Test title 2", result.get(1).getTitle());
+        assertEquals("Test title 3", result.get(2).getTitle());
+
+        // verificar que o repositorio é chamado apenas uma vez para o metodo findall
+        verify(bookRepository, times(1)).findAll();
     }
 }
