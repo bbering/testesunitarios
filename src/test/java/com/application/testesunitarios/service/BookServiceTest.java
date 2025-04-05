@@ -128,4 +128,32 @@ public class BookServiceTest {
         assertThrows(RuntimeException.class, () -> bookService.updateBook(new Book(), 1L),
                 "Nenhum livro encontrado com o id: " + 1L);
     }
+
+    @Test
+    @DisplayName("Should delete a book if it exists")
+    public void shouldDeleteBookIfItExists() {
+
+        // mockando o book para usa-lo nos testes
+        Book book = new Book(1L, "Test title", "Test author", 1990, 4);
+
+        // mockando o comportamento do repositorio
+        when(bookRepository.findById(book.getId())).thenReturn(Optional.of(book));
+
+        // atuacao da service
+        bookService.deleteBook(book.getId());
+
+        // garantir que o repository foi chamado apenas uma vez para realizar o delete
+        verify(bookRepository, times(1)).deleteById(book.getId());
+    }
+
+    @Test
+    @DisplayName("Should not delete a book if it doesnt exist")
+    public void shouldNotDeleteBookIfItDoesntExist() {
+        // se nao houver um book com o id fornecido, retorna um optional vazio
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // garantir que a excecao correta esta sendo lançada
+        assertThrows(RuntimeException.class, () -> bookService.deleteBook(1L),
+                "Nenhum livro encontrado com o id: " + 1L);
+    }
 }
