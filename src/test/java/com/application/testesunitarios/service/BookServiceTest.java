@@ -62,12 +62,20 @@ public class BookServiceTest {
     @Test
     @DisplayName("Should not create a book when data is not valid")
     public void shouldNotCreateBookWhenDataIsNotValid() {
-        Book invalidBook = new Book(null, "Test author");
+        // testando título nulo
+        IllegalArgumentException exceptionTitle = assertThrows(IllegalArgumentException.class,
+                () -> new Book(null, "Test author"));
+        assertEquals("Title and author cant be null", exceptionTitle.getMessage());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> bookService.createBook(invalidBook));
+        // testando autor nulo
+        IllegalArgumentException exceptionAuthor = assertThrows(IllegalArgumentException.class,
+                () -> new Book("Test title", null));
+        assertEquals("Title and author cant be null", exceptionAuthor.getMessage());
 
-        assertEquals("Title and author cant be null", exception.getMessage());
+        // testando ambos nulos
+        IllegalArgumentException exceptionBoth = assertThrows(IllegalArgumentException.class,
+                () -> new Book(null, null));
+        assertEquals("Title and author cant be null", exceptionBoth.getMessage());
     }
 
     @Test
@@ -155,5 +163,79 @@ public class BookServiceTest {
         // garantir que a excecao correta esta sendo lançada
         assertThrows(RuntimeException.class, () -> bookService.deleteBook(1L),
                 "Nenhum livro encontrado com o id: " + 1L);
+    }
+
+    @Test
+    @DisplayName("Should return the book to be borrowed with corrected quantityAvailable")
+    public void shouldReturnBookToBorrowWithCorrectQuantity() {
+        // mockando book que sera alugado
+        Book bookToBorrow = new Book(1L, "Test title", "Test author", 1990, 4);
+
+        // simulando o comportamento do repository
+        when(bookRepository.findById(bookToBorrow.getId())).thenReturn(Optional.of(bookToBorrow));
+
+        // chamando a classe service para acionar o metodo
+        Book borrowedBook = bookService.borrowBook(bookToBorrow.getId());
+
+        // verificar quantas vezes o repository foi chamado ao acionar o metodo
+        // borrowBook da service
+        verify(bookRepository, times(1)).findById(bookToBorrow.getId());
+
+        // assertions
+        assertEquals(bookToBorrow.getAuthor(), borrowedBook.getAuthor());
+        assertEquals(bookToBorrow.getTitle(), borrowedBook.getTitle());
+        assertEquals(bookToBorrow.getId(), borrowedBook.getId());
+        assertEquals(bookToBorrow.getQuantityAvailable(), borrowedBook.getQuantityAvailable());
+        assertEquals(bookToBorrow.getReleaseYear(), borrowedBook.getReleaseYear());
+    }
+
+    @Test
+    @DisplayName("Should not borrow a book if it doesnt exist")
+    public void shouldNotBorrowABookIfItDoesntExist() {
+        // simulando comportamento da repository
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // garantindo que a exceçao correta é lançada
+        assertThrows(RuntimeException.class, () -> bookService.borrowBook(1L),
+                "Nenhum livro encontrado com o id: " + 1L);
+    }
+
+    @Test
+    @DisplayName("Should return the book that was returned when id is valid")
+    public void shouldReturnTheReturnedBookIfIdIsValid() {
+        // mockando o book a ser usado no teste
+        Book returnedBook = new Book(1L, "Test title", "Test author", 1990, 4);
+
+        // simulando comportamento do repository
+        when(bookRepository.findById(returnedBook.getId())).thenReturn(Optional.of(returnedBook));
+
+        // acionando o metodo na classe service
+        Book validReturnedBook = bookService.returnBookById(returnedBook.getId());
+
+        // verificando quantas vezes o repository foi acionado para o metodo (deve ser
+        // apenas uma)
+        verify(bookRepository, times(1)).findById(validReturnedBook.getId());
+
+        // assertions
+        assertEquals(returnedBook.getTitle(), validReturnedBook.getTitle());
+        assertEquals(returnedBook.getAuthor(), validReturnedBook.getAuthor());
+        assertEquals(returnedBook.getId(), validReturnedBook.getId());
+        // devem ser os mesmos pois ao chamar o metodo returnBookById na service, foi
+        // passado o returnedBook que tera seu valor atribuido a validReturnedBook ja
+        // com o incremento na quantityAvailable
+        assertEquals(returnedBook.getQuantityAvailable(), validReturnedBook.getQuantityAvailable());
+        assertEquals(returnedBook.getReleaseYear(), validReturnedBook.getReleaseYear());
+    }
+
+    @Test
+    @DisplayName("Should not return the book if the id doesnt exist")
+    public void shouldNotReturnABookIfItsIdDoesntExist() {
+        // simulando o comportamento do repositorio
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // garantindo que a excecao correta é lançada em caso de id invalido
+        assertThrows(RuntimeException.class, () -> bookService.bookHasReturned(1L),
+                "Nenhum livro encontrado com o id: " + 1L);
+
     }
 }
